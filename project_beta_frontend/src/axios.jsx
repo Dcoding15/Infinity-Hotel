@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/hotel-infinity",
+  baseURL: "http://localhost:8000/hotel-infinity",
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 api.interceptors.request.use((config) => {
@@ -9,7 +13,25 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  console.log("Request to:", config.baseURL + config.url, "with data:", config.data);
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.log("Full error object:", error);
+    console.log("Error response status:", error.response?.status);
+    console.log("Error response data:", error.response?.data);
+    console.log("Error message:", error.message);
+    
+    if (error.response?.status === 401) {
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
