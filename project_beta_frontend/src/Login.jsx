@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "axios";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:8000/hotel-infinity/login',{
+      const res = await api.post('/login/',{
         username: username,
         password: password,
       });
