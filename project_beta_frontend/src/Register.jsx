@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "axios";
+import axiosInstance from "./AxiosInstance";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -12,17 +12,17 @@ function Register() {
     e.preventDefault();
 
     try {
-      const res = await api.post("/register/", {
-        username,
-        email,
-        password,
+      const res = await axiosInstance.post("register/", {
+        username: username,
+        email: email,
+        password: password,
       });
 
       // JWT tokens
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
 
-      navigate("/rooms");
+      navigate("/");
     } catch (err) {
       console.error(err);
       alert("Registration failed");

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "./AxiosInstance";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -20,7 +20,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://192.168.1.6:8000/hotel-infinity/login/", {
+      const res = await axiosInstance.post("login/", {
         username: username,
         password: password,
       });
@@ -28,14 +28,11 @@ function Login() {
       // store tokens
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-
-      alert("Login successful");
-      navigate("/home");
+      navigate("/rooms");
     } catch (err) {
       const message =
         err?.response?.data?.detail ||
         "Login failed. Please check your credentials." + err;
-
       alert(message);
     } finally {
       setLoading(false);
