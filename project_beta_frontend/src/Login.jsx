@@ -5,28 +5,45 @@ import api from "axios";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!username || !password) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await api.post('/login/',{
+      const res = await api.post("/login/", {
         username: username,
         password: password,
-      });
+        withCredentials: true });
 
+      // store tokens
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/home");
+
       alert("Login successful");
+      navigate("/home");
     } catch (err) {
-      alert("Invalid credentials " + err);
+      const message =
+        err?.response?.data?.detail ||
+        "Login failed. Please check your credentials.";
+
+      alert(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: "300px", margin: "100px auto" }}>
+    <div style={{ maxWidth: "320px", margin: "100px auto", textAlign: "center" }}>
       <h2>Login</h2>
 
       <form onSubmit={handleLogin}>
@@ -35,33 +52,34 @@ function Login() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          required
+          style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
         />
-
-        <br /><br />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
+          style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
         />
 
-        <br /><br />
+        <button
+          type="submit"
+          disabled={loading}
+          style={{ marginLeft: "10px", width: "100%", padding: "8px" }}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
-        <button type="submit">Login</button>
-
-        <p>
+        <p style={{ marginTop: "10px" }}>
           Don't have an account?{" "}
           <span
-            style={{ color: "blue", cursor: "pointer" }}
             onClick={() => navigate("/register")}
+            style={{ color: "blue", cursor: "pointer" }}
           >
             Register
           </span>
         </p>
-
       </form>
     </div>
   );
