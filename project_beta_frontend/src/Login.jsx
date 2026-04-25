@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "axios";
+import axios from "axios";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -11,16 +11,17 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await api.post("/login/",{
-        username,
-        password,
+      const res = await axios.post('http://localhost:8000/hotel-infinity/login',{
+        username: username,
+        password: password,
       });
 
-      localStorage.setItem("access", res.access);
-      localStorage.setItem("refresh", res.refresh);
+      localStorage.setItem("access", res.data.access);
+      localStorage.setItem("refresh", res.data.refresh);
       navigate("/home");
+      alert("Login successful");
     } catch (err) {
-      alert("Invalid credentials");
+      alert("Invalid credentials " + err);
     }
   };
 
