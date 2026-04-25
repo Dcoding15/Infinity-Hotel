@@ -19,7 +19,6 @@ class IsAdminRole(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == "admin"
 
-
 # ======================
 # ROOM MANAGEMENT (ADMIN)
 # ======================
@@ -45,7 +44,7 @@ class DeleteRoomView(generics.DestroyAPIView):
 # BOOKINGS (ADMIN)
 # ======================
 class AllBookingsView(generics.ListAPIView):
-    queryset = Booking.objects.all().order_by("-created_at")
+    queryset = Booking.objects.select_related("user", "room").order_by("-created_at")
     serializer_class = BookingSerializer
     permission_classes = [IsAdminRole]
 
@@ -58,7 +57,6 @@ class RoomListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Room.objects.all()
-
         params = self.request.query_params
 
         if params.get("room_type"):
@@ -73,10 +71,22 @@ class RoomListView(generics.ListAPIView):
         if params.get("capacity"):
             queryset = queryset.filter(capacity__gte=params.get("capacity"))
 
-        if params.get("is_available"):
-            queryset = queryset.filter(is_available=params.get("is_available"))
+        status_param = params.get("status")
 
-        return queryset
+        if status_param == "cancelled":
+            queryset = queryset.filter(bookings__status="cancelled")
+
+        elif status_param == "booked":
+            queryset = queryset.filter(
+                bookings__status__in=["pending", "confirmed"]
+            )
+
+        elif status_param == "available":
+            queryset = queryset.exclude(
+                bookings__status__in=["pending", "confirmed"]
+            )
+
+        return queryset.distinct()
 
 
 # ======================
@@ -100,6 +110,12 @@ class BookingCreateView(generics.CreateAPIView):
             check_out_date__gt=check_in,
             status__in=["pending", "confirmed"]
         )
+
+        if check_out <= check_in:
+            raise ValidationError("Check-out must be after check-in")
+
+        if check_in < now().date():
+            raise ValidationError("Cannot book past dates")
 
         if overlapping.exists():
             raise ValidationError("Room already booked for selected dates")
@@ -169,20 +185,31 @@ class MyBookingsView(generics.ListAPIView):
 class CancelBookingView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def put(self, request, booking_id):
-        try:
-            booking = Booking.objects.get(id=booking_id, user=request.user)
-        except Booking.DoesNotExist:
-            return Response({"error": "Booking not found"}, status=404)
+    def patch(self, request, booking_id):
+        booking = Booking.objects.filter(
+            id=booking_id,
+            user=request.user
+        ).first()
 
-        # ❗ Proper validation (your earlier version was WRONG)
+        if not booking:
+            return Response(
+                {"error": "Booking not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
         if booking.status == "cancelled":
-            return Response({"error": "Already cancelled"}, status=400)
+            return Response(
+                {"error": "Already cancelled"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         if booking.check_in_date <= now().date():
-            return Response({"error": "Cannot cancel after check-in"}, status=400)
+            return Response(
+                {"error": "Cannot cancel after check-in"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         booking.status = "cancelled"
-        booking.save()
+        booking.save(update_fields=["status"])
 
-        return Response({"message": "Booking cancelled successfully"})
+        return Response(BookingSerializer(booking).data)

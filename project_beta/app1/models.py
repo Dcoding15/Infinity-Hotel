@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
+from django.utils.timezone import now
 # Create your models here.
 
 
@@ -32,10 +34,9 @@ class Room(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     capacity = models.IntegerField()
     description = models.TextField(blank=True)
-    is_available = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.room_number}"
+        return f"Room {self.room_number}"
 
 
 # ----------------------
@@ -58,6 +59,12 @@ class Booking(models.Model):
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if self.check_out_date <= self.check_in_date:
+            raise ValidationError("Check-out must be after check-in")
+        if self.check_in_date < now().date():
+            raise ValidationError("Cannot book past dates")
 
     def __str__(self):
         return f"Booking {self.id} - {self.user.username}"
@@ -91,7 +98,7 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment for Booking {self.booking.id}"
+        return f"Payment - Booking {self.booking.id}"
 
 # ----------------------
 # User Review Model
@@ -99,8 +106,11 @@ class Payment(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
+
     rating = models.IntegerField()
     comment = models.TextField()
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return f"{self.user.username}"
+        return f"{self.user.username} - {self.room.room_number}"
