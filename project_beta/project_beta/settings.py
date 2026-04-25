@@ -65,11 +65,19 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+<<<<<<< HEAD
+=======
+    "django.middleware.common.CommonMiddleware",
+>>>>>>> 89e688e9a1a61adbdbf6bfe407d246d0d89b1596
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+<<<<<<< HEAD
     "http://127.0.0.1:5173",
+=======
+    "http://127.0.0.1:5173"
+>>>>>>> 89e688e9a1a61adbdbf6bfe407d246d0d89b1596
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

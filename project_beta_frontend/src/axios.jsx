@@ -1,11 +1,15 @@
 import axios from "axios";
 
 const api = axios.create({
+<<<<<<< HEAD
   baseURL: "http://localhost:8000/hotel-infinity",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
+=======
+  baseURL: "http://192.168.1.6:8000/hotel-infinity",
+>>>>>>> 89e688e9a1a61adbdbf6bfe407d246d0d89b1596
 });
 
 api.interceptors.request.use((config) => {
