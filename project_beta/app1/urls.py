@@ -12,7 +12,7 @@ urlpatterns = [
     # ======================
     # ROOMS (ALL)
     # ======================
-    path("rooms/", RoomListView.as_view()),
+    path("", RoomListView.as_view()),
 
     # ======================
     # ROOMS (ADMIN)
@@ -20,12 +20,12 @@ urlpatterns = [
     path("admin-rooms/create/", CreateRoomView.as_view()),
     path("admin-rooms/<int:pk>/", UpdateRoomView.as_view()),
     path("admin-rooms/<int:pk>/delete/", DeleteRoomView.as_view()),
-    path("admin/bookings/", AllBookingsView.as_view()),
+    path("admin-rooms/view/", AllBookingsView.as_view()),
 
     # ======================
     # BOOKINGS (USER)
     # ======================
-    path("book-a-room/", BookingCreateView.as_view()),
-    path("my-bookings/", MyBookingsView.as_view()),
-    path("cancel-booking/<int:booking_id>/", CancelBookingView.as_view()),
+    path("user-rooms/book/", BookingCreateView.as_view()),
+    path("user-rooms/view/", MyBookingsView.as_view()),
+    path("user-rooms/cancel/<int:booking_id>/", CancelBookingView.as_view()),
 ]

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "./AxiosInstance";
+import { useNavigate } from "react-router-dom";
+import "./Rooms.css";
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
@@ -8,6 +10,7 @@ function Rooms() {
   const [totalPages, setTotalPages] = useState(1);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRooms();
@@ -16,7 +19,7 @@ function Rooms() {
   const fetchRooms = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get(`rooms/?page=${page}`);
+      const res = await axiosInstance.get(`/?page=${page}`);
 
       setRooms(res.data.results);
 
@@ -43,7 +46,7 @@ const bookRoom = async (roomId) => {
 
   try {
     await axiosInstance.post(
-      "/book-a-room/",
+      "user-rooms/book/",
       {
         room: roomId,
         check_in_date: checkIn,
@@ -74,108 +77,91 @@ const bookRoom = async (roomId) => {
     return <h3 style={{ textAlign: "center" }}>Loading rooms...</h3>;
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "auto", padding: "20px" }}>
-      <h2 style={{ textAlign: "center" }}>🏨 Available Rooms</h2>
-
-      {rooms.length === 0 ? (
-        <p style={{ textAlign: "center" }}>No rooms available</p>
-      ) : (
-        <>
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <input
-            type="date"
-            value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
-            style={{ marginRight: "10px", padding: "8px" }}
-          />
-
-          <input
-            type="date"
-            value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            style={{ padding: "8px" }}
-          />
+    <>
+{/* Header */}
+      <div className="home-header">
+        <div className="header-top">
+          <button className="login-btn" onClick={() => navigate("/login")}>
+            Login
+          </button>
         </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              gap: "20px",
-              marginTop: "20px",
-            }}
-          >
-            {rooms.map((room) => (
-              <div
-                key={room.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "12px",
-                  padding: "15px",
-                  background: "#fff",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-                  transition: "0.2s",
-                }}
+
+        <h1>🏨 Hotel Management System</h1>
+        <p>Book rooms easily and manage your stays</p>
+      </div>
+
+      {/* Main Content */}
+      <div className="home-container">
+        <h2 className="section-title">🏨 Available Rooms</h2>
+
+        {rooms.length === 0 ? (
+          <p className="empty-text">No rooms available</p>
+        ) : (
+          <>
+            {/* Date Filters */}
+            <div className="date-filter">
+              <input
+                type="date"
+                value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
+              />
+
+              <input
+                type="date"
+                value={checkOut}
+                onChange={(e) => setCheckOut(e.target.value)}
+              />
+            </div>
+
+            {/* Rooms Grid */}
+            <div className="rooms-grid">
+              {rooms.map((room) => (
+                <div key={room.id} className="room-card">
+                  <h3>Room {room.room_number}</h3>
+
+                  <p><strong>Type:</strong> {room.room_type}</p>
+                  <p><strong>Price:</strong> ₹{room.price}</p>
+                  <p><strong>Capacity:</strong> {room.capacity}</p>
+                  <p>
+                    <strong>Status:</strong>{" "}
+                    {room.is_available ? "Available" : "Booked"}
+                  </p>
+
+                  <button
+                    onClick={() => bookRoom(room.id)}
+                    className="book-btn"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="pagination">
+              <button
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 1}
               >
-                <h3>Room {room.room_number}</h3>
+                ⬅ Prev
+              </button>
 
-                <p><strong>Type:</strong> {room.room_type}</p>
-                <p><strong>Price:</strong> ₹{room.price}</p>
-                <p><strong>Capacity:</strong> {room.capacity}</p>
-                <p><strong>Status:</strong> {room.is_available ? "Available" : "Booked"}</p>
+              <span>
+                Page <strong>{page}</strong> of{" "}
+                <strong>{totalPages}</strong>
+              </span>
 
-                <button
-                  onClick={() => bookRoom(room.id)}
-                  style={{
-                    marginTop: "10px",
-                    width: "100%",
-                    padding: "10px",
-                    border: "none",
-                    borderRadius: "6px",
-                    background: "#28a745",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                  }}
-                >
-                  Book Now
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div
-            style={{
-              marginTop: "30px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "15px",
-            }}
-          >
-            <button
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page === 1}
-              style={{ padding: "8px 12px" }}
-            >
-              ⬅ Prev
-            </button>
-
-            <span>
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong>
-            </span>
-
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page === totalPages}
-              style={{ padding: "8px 12px" }}
-            >
-              Next ➡
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page === totalPages}
+              >
+                Next ➡
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
 

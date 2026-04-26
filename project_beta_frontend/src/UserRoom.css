@@ -1,0 +1,98 @@
+.bookings-container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Filter */
+.filter-box {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.filter-box select {
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* States */
+.loading-text,
+.empty-text {
+  text-align: center;
+  color: gray;
+}
+
+/* Grid */
+.booking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* Card */
+.booking-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-transform: capitalize;
+  color: white;
+}
+
+/* Status Colors */
+.status.pending {
+  background: orange;
+}
+
+.status.confirmed {
+  background: green;
+}
+
+.status.cancelled {
+  background: red;
+}
+
+/* Body */
+.card-body {
+  margin-top: 10px;
+}
+
+/* Button */
+.cancel-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #dc3545;
+  color: white;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+}

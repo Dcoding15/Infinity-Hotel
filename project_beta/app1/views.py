@@ -203,13 +203,18 @@ class CancelBookingView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if booking.check_in_date <= now().date():
+        if booking.check_in_date == now().date() and booking.status == "pending":
             return Response(
-                {"error": "Cannot cancel after check-in"},
+                {"error": "Cannot cancel on check-in date"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        booking.status = "cancelled"
-        booking.save(update_fields=["status"])
+        # ✅ Soft delete
+        if (booking.check_in_date > now().date() and booking.status == "pending") or (booking.check_out_date == now().date()) or (booking.check_in_date > now().date()+9):
+            booking.status = "cancelled"
+            booking.save(update_fields=["status"])
 
-        return Response(BookingSerializer(booking).data)
+        return Response(
+            {"message": "Booking cancelled successfully"},
+            status=status.HTTP_200_OK
+        )

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "./AxiosInstance";
+import "./Login.css";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -20,7 +21,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await axiosInstance.post("login/", {
+      const res = await axiosInstance.post("/login/", {
         username: username,
         password: password,
       });
@@ -28,7 +29,7 @@ function Login() {
       // store tokens
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/rooms");
+      navigate("/user-rooms/view/");
     } catch (err) {
       const message =
         err?.response?.data?.detail ||
@@ -40,44 +41,48 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: "320px", margin: "100px auto", textAlign: "center" }}>
-      <h2>Login</h2>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2 className="auth-title">Welcome Back</h2>
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-        />
+        <form onSubmit={handleLogin} className="auth-form">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="input-field"
+            required
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-        />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input-field"
+            required
+          />
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ marginLeft: "10px", width: "100%", padding: "8px" }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="auth-btn"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
-        <p style={{ marginTop: "10px" }}>
-          Don't have an account?{" "}
+        <p className="switch-text">
+          Don’t have an account?{" "}
           <span
-            onClick={() => navigate("/register")}
-            style={{ color: "blue", cursor: "pointer" }}
+            className="switch-link"
+            onClick={() => navigate("/register/")}
           >
             Register
           </span>
         </p>
-      </form>
+      </div>
     </div>
   );
 }
