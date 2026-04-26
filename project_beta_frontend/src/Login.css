@@ -1,73 +1,221 @@
+/* ── Login ─────────────────────────────────────────── */
+
 .auth-container {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--cream);
 }
 
-.auth-card {
-  background: white;
-  padding: 30px;
-  width: 320px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
+/* Left panel — decorative */
+.auth-panel {
+  background: var(--charcoal);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 60px 52px;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-panel::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: var(--amber);
+  opacity: 0.12;
+}
+
+.auth-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 120px;
+  left: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: var(--amber-light);
+  opacity: 0.08;
+}
+
+.panel-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.panel-tagline {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+}
+
+.panel-tagline em {
+  color: var(--amber-light);
+  font-style: italic;
+}
+
+.panel-sub {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--stone-light);
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+  max-width: 280px;
+}
+
+.panel-divider {
+  width: 40px;
+  height: 2px;
+  background: var(--amber);
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Right panel — form */
+.auth-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 64px;
+}
+
+.auth-logo {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--amber);
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 56px;
 }
 
 .auth-title {
-  margin-bottom: 20px;
-  color: #333;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 6px;
 }
 
+.auth-subtitle {
+  font-size: 14px;
+  color: var(--stone);
+  margin-bottom: 40px;
+}
+
+/* Form */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.input-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--charcoal-soft);
 }
 
 .input-field {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 13px 16px;
+  background: var(--white);
+  border: 1.5px solid var(--cream-dark);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--charcoal);
   outline: none;
-  transition: 0.3s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field::placeholder {
+  color: var(--stone-light);
 }
 
 .input-field:focus {
-  border-color: #667eea;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(200, 131, 58, 0.12);
 }
 
 .auth-btn {
-  padding: 10px;
-  background: #667eea;
-  color: white;
+  margin-top: 6px;
+  padding: 14px;
+  background: var(--charcoal);
+  color: var(--white);
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.1s;
 }
 
 .auth-btn:hover {
-  background: #5a67d8;
+  background: var(--amber);
+}
+
+.auth-btn:active {
+  transform: scale(0.99);
 }
 
 .auth-btn:disabled {
-  background: #aaa;
+  background: var(--stone-light);
   cursor: not-allowed;
 }
 
 .switch-text {
-  margin-top: 15px;
+  margin-top: 28px;
   font-size: 14px;
+  color: var(--stone);
+  text-align: center;
 }
 
 .switch-link {
-  color: #667eea;
+  color: var(--amber);
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .switch-link:hover {
-  text-decoration: underline;
+  color: var(--amber-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .auth-container {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-panel {
+    display: none;
+  }
+
+  .auth-form-panel {
+    padding: 48px 28px;
+  }
 }

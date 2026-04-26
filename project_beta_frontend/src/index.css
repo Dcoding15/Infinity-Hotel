@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --cream: #f7f3ee;
+  --cream-dark: #ede7dd;
+  --charcoal: #1c1c1c;
+  --charcoal-soft: #3a3a3a;
+  --amber: #c8833a;
+  --amber-light: #e9a55a;
+  --amber-pale: #fdf0e0;
+  --stone: #8a7f74;
+  --stone-light: #b5aca3;
+  --white: #ffffff;
+  --red: #b84040;
+  --green: #3a7a52;
+  --shadow-sm: 0 2px 8px rgba(28,28,28,0.06);
+  --shadow-md: 0 6px 24px rgba(28,28,28,0.10);
+  --shadow-lg: 0 16px 48px rgba(28,28,28,0.14);
+  --radius: 4px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+html, body {
+  background: var(--cream);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+input, select {
+  font-family: var(--font-body);
+}
