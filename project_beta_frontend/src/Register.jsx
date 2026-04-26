@@ -4,12 +4,12 @@ import axiosInstance from "./AxiosInstance";
 import "./Register.css";
 
 function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({ username: "", email: "", password: "", phone: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -17,17 +17,17 @@ function Register() {
     setLoading(true);
 
     try {
-      const res = await axiosInstance.post("/register/", { username, email, password });
+      const res = await axiosInstance.post("register/", form);
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/login");
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      navigate("/");
     } catch (err) {
-      console.error(err);
       const data = err?.response?.data;
       const message =
-        (data && typeof data === "object"
+        data && typeof data === "object"
           ? Object.values(data).flat().join(" ")
-          : null) || "Registration failed. Please try again.";
+          : "Registration failed. Please try again.";
       setError(message);
     } finally {
       setLoading(false);
@@ -36,7 +36,6 @@ function Register() {
 
   return (
     <div className="auth-container">
-      {/* Left decorative panel */}
       <div className="auth-panel">
         <p className="panel-eyebrow">Hotel Infinity</p>
         <div className="panel-divider" />
@@ -48,55 +47,33 @@ function Register() {
         </p>
       </div>
 
-      {/* Right form panel */}
       <div className="auth-form-panel">
         <div className="auth-logo">∞ Hotel Infinity</div>
-
         <h1 className="auth-title">Create account</h1>
         <p className="auth-subtitle">Join us — it only takes a moment</p>
 
         <form onSubmit={handleRegister} className="auth-form">
-          <div className="input-group">
-            <label className="input-label" htmlFor="username">Username</label>
-            <input
-              id="username"
-              type="text"
-              placeholder="Choose a username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input-field"
-              autoComplete="username"
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              autoComplete="email"
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Create a strong password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              autoComplete="new-password"
-              required
-            />
-          </div>
+          {[
+            { name: "username", label: "Username", type: "text", placeholder: "Choose a username", autoComplete: "username" },
+            { name: "email", label: "Email", type: "email", placeholder: "your@email.com", autoComplete: "email" },
+            { name: "phone", label: "Phone (optional)", type: "tel", placeholder: "+91 XXXXX XXXXX", autoComplete: "tel" },
+            { name: "password", label: "Password", type: "password", placeholder: "Min. 8 characters", autoComplete: "new-password" },
+          ].map(({ name, label, type, placeholder, autoComplete }) => (
+            <div className="input-group" key={name}>
+              <label className="input-label" htmlFor={name}>{label}</label>
+              <input
+                id={name}
+                name={name}
+                type={type}
+                placeholder={placeholder}
+                value={form[name]}
+                onChange={handleChange}
+                className="input-field"
+                autoComplete={autoComplete}
+                required={name !== "phone"}
+              />
+            </div>
+          ))}
 
           {error && <p className="form-error">{error}</p>}
 
@@ -107,9 +84,7 @@ function Register() {
 
         <p className="switch-text">
           Already have an account?{" "}
-          <span className="switch-link" onClick={() => navigate("/login")}>
-            Sign in
-          </span>
+          <span className="switch-link" onClick={() => navigate("/login")}>Sign in</span>
         </p>
       </div>
     </div>

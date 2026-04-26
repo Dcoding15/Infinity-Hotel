@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "./AxiosInstance";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
 import "./Rooms.css";
+
+const ROOM_TYPES = ["", "single", "double", "suite"];
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
@@ -11,19 +14,21 @@ function Rooms() {
   const [totalCount, setTotalCount] = useState(0);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const [filters, setFilters] = useState({ room_type: "", min_price: "", max_price: "", capacity: "", available: "" });
+  const [booking, setBooking] = useState(null); // which room is being booked
   const navigate = useNavigate();
-
-  const isLoggedIn = Boolean(localStorage.getItem("access"));
 
   useEffect(() => {
     fetchRooms();
-  }, [page]);
+  }, [page, filters]);
 
   const fetchRooms = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get(`/?page=${page}`);
-      setRooms(res.data.results ?? []);
+      const params = new URLSearchParams({ page });
+      Object.entries(filters).forEach(([k, v]) => { if (v !== "") params.set(k, v); });
+      const res = await axiosInstance.get(`rooms/?${params}`);
+      setRooms(res.data.results ?? res.data);
       if (res.data.count) {
         setTotalCount(res.data.count);
         setTotalPages(Math.ceil(res.data.count / 10));
@@ -35,70 +40,47 @@ function Rooms() {
     }
   };
 
-  const bookRoom = async (roomId) => {
+  const handleFilterChange = (key, value) => {
+    setPage(1);
+    setFilters((f) => ({ ...f, [key]: value }));
+  };
+
+  const bookRoom = async (room) => {
+    if (!localStorage.getItem("access")) {
+      navigate("/login");
+      return;
+    }
     if (!checkIn || !checkOut) {
       alert("Please select check-in and check-out dates before booking.");
       return;
     }
-
+    setBooking(room.id);
     try {
-      const room = rooms.find((r) => r.id === roomId);
-      await axiosInstance.post(
-        "user-rooms/book/",
-        {
-          room: roomId,
-          check_in_date: checkIn,
-          check_out_date: checkOut,
-          total_price: room?.price ?? 0,
-        },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
-        }
-      );
-      alert("Booking confirmed! Check your profile for details.");
+      await axiosInstance.post("bookings/", {
+        room: room.id,
+        check_in_date: checkIn,
+        check_out_date: checkOut,
+      });
+      alert(`Room ${room.room_number} booked! Check My Bookings for details.`);
     } catch (err) {
-      console.error(err);
       if (err.response?.status === 401) {
-        alert("Please sign in to book a room.");
         navigate("/login");
       } else {
-        alert(err.response?.data?.error || "Booking failed. Please try again.");
+        const msg = err.response?.data;
+        const text = msg && typeof msg === "object"
+          ? Object.values(msg).flat().join(" ")
+          : "Booking failed. Please try again.";
+        alert(text);
       }
+    } finally {
+      setBooking(null);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    navigate("/login");
-  };
-
-  if (loading) {
-    return <div className="loading-screen">Finding available rooms…</div>;
-  }
-
   return (
     <>
-      {/* Sticky header nav */}
-      <header className="rooms-header">
-        <div className="header-brand">∞ Hotel <span>Infinity</span></div>
-        <div className="header-actions">
-          <button className="btn-outline" onClick={() => navigate("/user-profile")}>
-            My Bookings
-          </button>
-          {isLoggedIn ? (
-            <button className="btn-amber" onClick={handleLogout}>
-              Sign Out
-            </button>
-          ) : (
-            <button className="btn-amber" onClick={() => navigate("/login")}>
-              Sign In
-            </button>
-          )}
-        </div>
-      </header>
+      <Navbar />
 
-      {/* Hero band with date filters */}
       <div className="rooms-hero">
         <h1>Find your perfect <em>room</em></h1>
         <p>Browse our curated selection and book in seconds.</p>
@@ -106,38 +88,57 @@ function Rooms() {
         <div className="date-filter">
           <div className="date-group">
             <label className="date-label">Check-in</label>
-            <input
-              type="date"
-              className="date-input"
-              value={checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
-            />
+            <input type="date" className="date-input" value={checkIn}
+              onChange={(e) => setCheckIn(e.target.value)} min={new Date().toISOString().split("T")[0]} />
           </div>
           <div className="date-group">
             <label className="date-label">Check-out</label>
-            <input
-              type="date"
-              className="date-input"
-              value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-            />
+            <input type="date" className="date-input" value={checkOut}
+              onChange={(e) => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split("T")[0]} />
           </div>
         </div>
       </div>
 
-      {/* Room listing */}
       <main className="rooms-body">
-        <div className="section-header">
-          <h2 className="section-title">Available Rooms</h2>
-          {totalCount > 0 && (
-            <span className="room-count">{totalCount} rooms found</span>
-          )}
+        {/* Filters bar */}
+        <div className="filters-bar">
+          <select className="filter-select" value={filters.room_type}
+            onChange={(e) => handleFilterChange("room_type", e.target.value)}>
+            <option value="">All Types</option>
+            {ROOM_TYPES.filter(Boolean).map((t) => (
+              <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+            ))}
+          </select>
+
+          <input type="number" className="filter-input" placeholder="Min price"
+            value={filters.min_price} onChange={(e) => handleFilterChange("min_price", e.target.value)} />
+          <input type="number" className="filter-input" placeholder="Max price"
+            value={filters.max_price} onChange={(e) => handleFilterChange("max_price", e.target.value)} />
+          <input type="number" className="filter-input" placeholder="Min guests"
+            value={filters.capacity} onChange={(e) => handleFilterChange("capacity", e.target.value)} />
+
+          <select className="filter-select" value={filters.available}
+            onChange={(e) => handleFilterChange("available", e.target.value)}>
+            <option value="">All Availability</option>
+            <option value="true">Available</option>
+            <option value="false">Booked</option>
+          </select>
+
+          <button className="filter-reset" onClick={() => {
+            setFilters({ room_type: "", min_price: "", max_price: "", capacity: "", available: "" });
+            setPage(1);
+          }}>Reset</button>
         </div>
 
-        {rooms.length === 0 ? (
-          <div className="empty-state">
-            <p>No rooms available at the moment. Check back soon.</p>
-          </div>
+        <div className="section-header">
+          <h2 className="section-title">Available Rooms</h2>
+          {totalCount > 0 && <span className="room-count">{totalCount} rooms</span>}
+        </div>
+
+        {loading ? (
+          <div className="loading-screen">Finding available rooms…</div>
+        ) : rooms.length === 0 ? (
+          <div className="empty-state"><p>No rooms match your filters.</p></div>
         ) : (
           <>
             <div className="rooms-grid">
@@ -163,41 +164,42 @@ function Rooms() {
                       <span className="meta-label">Capacity</span>
                       <span className="meta-value">{room.capacity} guests</span>
                     </div>
+                    {room.amenities && (
+                      <div className="meta-item meta-full">
+                        <span className="meta-label">Amenities</span>
+                        <span className="meta-value amenities">{room.amenities}</span>
+                      </div>
+                    )}
                   </div>
+
+                  {room.description && (
+                    <p className="room-description">{room.description}</p>
+                  )}
 
                   <div className="room-divider" />
 
                   <button
                     className="book-btn"
-                    onClick={() => bookRoom(room.id)}
-                    disabled={!room.is_available}
+                    onClick={() => bookRoom(room)}
+                    disabled={!room.is_available || booking === room.id}
                   >
-                    {room.is_available ? "Book Now" : "Unavailable"}
+                    {booking === room.id ? "Booking…" : room.is_available ? "Book Now" : "Unavailable"}
                   </button>
                 </div>
               ))}
             </div>
 
-            {/* Pagination */}
-            <div className="pagination">
-              <button
-                className="pagination-btn"
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page === 1}
-              >
-                ← Previous
-              </button>
-              <span className="pagination-info">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                className="pagination-btn"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page === totalPages}
-              >
-                Next →
-              </button>
-            </div>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button className="pagination-btn" onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+                  ← Previous
+                </button>
+                <span className="pagination-info">Page {page} of {totalPages}</span>
+                <button className="pagination-btn" onClick={() => setPage((p) => p + 1)} disabled={page === totalPages}>
+                  Next →
+                </button>
+              </div>
+            )}
           </>
         )}
       </main>

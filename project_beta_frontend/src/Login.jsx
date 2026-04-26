@@ -13,21 +13,26 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (!username || !password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-
     setLoading(true);
+
     try {
-      const res = await axiosInstance.post("/login/", { username, password });
+      const res = await axiosInstance.post("login/", { username, password });
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/user-profile");
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // Redirect admin to dashboard, customer to rooms
+      if (res.data.user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
+      const data = err?.response?.data;
       setError(
-        err?.response?.data?.detail || "Login failed. Please check your credentials."
+        (Array.isArray(data?.non_field_errors) ? data.non_field_errors[0] : null) ||
+        data?.detail ||
+        "Login failed. Please check your credentials."
       );
     } finally {
       setLoading(false);
@@ -36,7 +41,6 @@ function Login() {
 
   return (
     <div className="auth-container">
-      {/* Left decorative panel */}
       <div className="auth-panel">
         <p className="panel-eyebrow">Hotel Infinity</p>
         <div className="panel-divider" />
@@ -48,10 +52,8 @@ function Login() {
         </p>
       </div>
 
-      {/* Right form panel */}
       <div className="auth-form-panel">
         <div className="auth-logo">∞ Hotel Infinity</div>
-
         <h1 className="auth-title">Welcome back</h1>
         <p className="auth-subtitle">Sign in to your account to continue</p>
 
@@ -66,6 +68,7 @@ function Login() {
               onChange={(e) => setUsername(e.target.value)}
               className="input-field"
               autoComplete="username"
+              required
             />
           </div>
 
@@ -79,6 +82,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="input-field"
               autoComplete="current-password"
+              required
             />
           </div>
 
@@ -91,9 +95,7 @@ function Login() {
 
         <p className="switch-text">
           Don't have an account?{" "}
-          <span className="switch-link" onClick={() => navigate("/register")}>
-            Create one
-          </span>
+          <span className="switch-link" onClick={() => navigate("/register")}>Create one</span>
         </p>
       </div>
     </div>
