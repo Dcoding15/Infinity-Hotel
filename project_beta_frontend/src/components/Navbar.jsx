@@ -1,19 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Navbar.css";
 
-function Navbar() {
+function Navbar({ user }) {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const user = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("user"));
-    } catch {
-      return null;
-    }
-  })();
-
-  const isLoggedIn = Boolean(localStorage.getItem("access"));
   const isAdmin = user?.role === "admin";
 
   const handleLogout = () => {
@@ -39,7 +29,7 @@ function Navbar() {
           Rooms
         </button>
 
-        {isLoggedIn && !isAdmin && (
+        {!isAdmin && (
           <>
             <button
               className={`nav-link ${isActive("/bookings") ? "active" : ""}`}
@@ -99,26 +89,13 @@ function Navbar() {
       </nav>
 
       <div className="navbar-actions">
-        {isLoggedIn ? (
-          <>
-            <span className="navbar-user">
-              {user?.username ?? "Account"}
-              {isAdmin && <span className="admin-badge">Admin</span>}
-            </span>
-            <button className="btn-amber" onClick={handleLogout}>
-              Sign Out
-            </button>
-          </>
-        ) : (
-          <>
-            <button className="btn-outline" onClick={() => navigate("/login")}>
-              Sign In
-            </button>
-            <button className="btn-amber" onClick={() => navigate("/register")}>
-              Register
-            </button>
-          </>
-        )}
+        <span className="navbar-user">
+          {user?.username ?? "Account"}
+          {isAdmin && <span className="admin-badge">Admin</span>}
+        </span>
+        <button className="btn-amber" onClick={handleLogout}>
+          Sign Out
+        </button>
       </div>
     </header>
   );

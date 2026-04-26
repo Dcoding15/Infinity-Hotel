@@ -1,0 +1,135 @@
+.payments-page {
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.payments-hero {
+  background: var(--cream-dark);
+  border-bottom: 1px solid rgba(28,28,28,0.08);
+  padding: 40px 48px;
+}
+
+.payments-hero h1 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+}
+
+.payments-hero h1 em {
+  font-style: italic;
+  color: var(--amber);
+}
+
+.payments-hero p {
+  font-size: 14px;
+  color: var(--stone);
+}
+
+.payments-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 48px 80px;
+}
+
+.payments-table-container {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.payments-table th,
+.payments-table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.payments-table th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--stone);
+  background: var(--cream);
+}
+
+.payments-table tr:last-child td {
+  border-bottom: none;
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.payment-badge.paid {
+  background: rgba(58, 122, 82, 0.1);
+  color: var(--green);
+}
+
+.payment-badge.pending {
+  background: rgba(184, 107, 26, 0.1);
+  color: #b86b1a;
+}
+
+.payment-badge.failed {
+  background: rgba(184, 64, 64, 0.1);
+  color: var(--red);
+}
+
+.payment-badge.refunded {
+  background: rgba(138, 127, 116, 0.1);
+  color: var(--stone);
+}
+
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--stone);
+  font-style: italic;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--stone);
+}
+
+.empty-link {
+  font-size: 14px;
+  color: var(--amber);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .payments-hero {
+    padding: 28px 24px;
+  }
+  .payments-body {
+    padding: 24px 24px 60px;
+  }
+  .payments-table th,
+  .payments-table td {
+    padding: 12px 14px;
+  }
+}

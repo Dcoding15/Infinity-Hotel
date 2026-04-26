@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "./AxiosInstance";
+import axiosInstance from "../AxiosInstance";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
 import "./Rooms.css";
 
 const ROOM_TYPES = ["", "single", "double", "suite"];
@@ -15,7 +14,7 @@ function Rooms() {
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [filters, setFilters] = useState({ room_type: "", min_price: "", max_price: "", capacity: "", available: "" });
-  const [booking, setBooking] = useState(null); // which room is being booked
+  const [bookingRoomId, setBookingRoomId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,7 +45,8 @@ function Rooms() {
   };
 
   const bookRoom = async (room) => {
-    if (!localStorage.getItem("access")) {
+    const token = localStorage.getItem("access");
+    if (!token) {
       navigate("/login");
       return;
     }
@@ -54,14 +54,14 @@ function Rooms() {
       alert("Please select check-in and check-out dates before booking.");
       return;
     }
-    setBooking(room.id);
+    setBookingRoomId(room.id);
     try {
       await axiosInstance.post("bookings/", {
         room: room.id,
         check_in_date: checkIn,
         check_out_date: checkOut,
       });
-      alert(`Room ${room.room_number} booked! Check My Bookings for details.`);
+      alert(`Room ${room.room_number} booked! View it in My Bookings.`);
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login");
@@ -73,14 +73,12 @@ function Rooms() {
         alert(text);
       }
     } finally {
-      setBooking(null);
+      setBookingRoomId(null);
     }
   };
 
   return (
     <>
-      <Navbar />
-
       <div className="rooms-hero">
         <h1>Find your perfect <em>room</em></h1>
         <p>Browse our curated selection and book in seconds.</p>
@@ -100,7 +98,6 @@ function Rooms() {
       </div>
 
       <main className="rooms-body">
-        {/* Filters bar */}
         <div className="filters-bar">
           <select className="filter-select" value={filters.room_type}
             onChange={(e) => handleFilterChange("room_type", e.target.value)}>
@@ -181,9 +178,9 @@ function Rooms() {
                   <button
                     className="book-btn"
                     onClick={() => bookRoom(room)}
-                    disabled={!room.is_available || booking === room.id}
+                    disabled={!room.is_available || bookingRoomId === room.id}
                   >
-                    {booking === room.id ? "Booking…" : room.is_available ? "Book Now" : "Unavailable"}
+                    {bookingRoomId === room.id ? "Booking…" : room.is_available ? "Book Now" : "Unavailable"}
                   </button>
                 </div>
               ))}

@@ -81,22 +81,6 @@
   text-transform: uppercase;
 }
 
-.btn-outline {
-  padding: 8px 16px;
-  border: 1.5px solid rgba(255,255,255,0.25);
-  background: transparent;
-  color: var(--white);
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
-  transition: border-color 0.2s, background 0.2s;
-}
-
-.btn-outline:hover {
-  border-color: var(--amber);
-  background: rgba(200,131,58,0.12);
-}
-
 .btn-amber {
   padding: 8px 16px;
   border: none;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "./AxiosInstance";
+import axiosInstance from "../AxiosInstance";
 import "./Login.css";
 
 function Login() {
@@ -21,7 +21,6 @@ function Login() {
       localStorage.setItem("refresh", res.data.refresh);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // Redirect admin to dashboard, customer to rooms
       if (res.data.user?.role === "admin") {
         navigate("/admin");
       } else {

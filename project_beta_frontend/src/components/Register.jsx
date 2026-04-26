@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "./AxiosInstance";
+import axiosInstance from "../AxiosInstance";
 import "./Register.css";
 
 function Register() {

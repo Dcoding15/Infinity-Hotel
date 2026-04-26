@@ -43,6 +43,6 @@ button {
   cursor: pointer;
 }
 
-input, select {
+input, select, textarea {
   font-family: var(--font-body);
 }

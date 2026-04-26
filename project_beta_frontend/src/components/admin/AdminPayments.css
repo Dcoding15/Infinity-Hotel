@@ -1,0 +1,96 @@
+.admin-payments {
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.admin-header {
+  background: var(--cream-dark);
+  border-bottom: 1px solid rgba(28,28,28,0.08);
+  padding: 32px 48px;
+}
+
+.admin-header h1 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+}
+
+.admin-header h1 em {
+  font-style: italic;
+  color: var(--amber);
+}
+
+.payments-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 48px 80px;
+}
+
+.filters-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  align-items: center;
+}
+
+.payments-table-container {
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.payments-table th, .payments-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+.payments-table th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--cream);
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.payment-badge.paid { background: rgba(58,122,82,0.1); color: var(--green); }
+.payment-badge.pending { background: rgba(184,107,26,0.1); color: #b86b1a; }
+.payment-badge.failed { background: rgba(184,64,64,0.1); color: var(--red); }
+.payment-badge.refunded { background: rgba(138,127,116,0.1); color: var(--stone); }
+
+.mark-paid, .mark-refunded {
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.mark-paid {
+  background: rgba(58,122,82,0.1);
+  color: var(--green);
+}
+
+.mark-refunded {
+  background: rgba(138,127,116,0.1);
+  color: var(--stone);
+}

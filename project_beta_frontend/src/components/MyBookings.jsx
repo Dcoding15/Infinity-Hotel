@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "./AxiosInstance";
+import axiosInstance from "../AxiosInstance";
 import { useNavigate } from "react-router-dom";
-import "./UserRoom.css";
+import "./MyBookings.css";
 
 const STATUS_OPTIONS = ["pending", "confirmed", "cancelled"];
 
-function UserBookings() {
+function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");
@@ -18,12 +18,8 @@ function UserBookings() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("access");
-      const res = await axiosInstance.get(
-        `/user-rooms/view/?status=${statusFilter}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setBookings(res.data.results ?? []);
+      const res = await axiosInstance.get(`bookings/my/?status=${statusFilter}`);
+      setBookings(res.data.results ?? res.data);
     } catch (err) {
       console.error("Fetch error:", err);
       if (err.response?.status === 401) navigate("/login");
@@ -33,14 +29,9 @@ function UserBookings() {
   };
 
   const cancelBooking = async (id) => {
-    if (!window.confirm("Cancel this booking?")) return;
+    if (!window.confirm("Cancel this booking? Cancellations are only allowed 24+ hours before check-in.")) return;
     try {
-      const token = localStorage.getItem("access");
-      await axiosInstance.patch(
-        `/user-rooms/cancel/${id}/`,
-        null,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axiosInstance.patch(`bookings/${id}/cancel/`);
       fetchBookings();
     } catch (err) {
       console.error("Cancel error:", err);
@@ -48,36 +39,20 @@ function UserBookings() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    navigate("/login");
+  const getStatusClass = (status) => {
+    if (status === "pending") return "pending";
+    if (status === "confirmed") return "confirmed";
+    return "cancelled";
   };
 
   return (
     <div className="bookings-page">
-      {/* Header */}
-      <header className="bookings-header">
-        <div className="header-brand">∞ Hotel <span>Infinity</span></div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button className="btn-ghost" onClick={() => navigate("/")}>
-            Browse Rooms
-          </button>
-          <button className="btn-ghost" onClick={handleLogout}>
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      {/* Hero band */}
       <div className="bookings-hero">
         <h1>Your <em>reservations</em></h1>
         <p>View and manage all your bookings in one place.</p>
       </div>
 
-      {/* Body */}
       <main className="bookings-body">
-        {/* Status filter tabs */}
         <div className="filter-row">
           <span className="filter-label">Filter</span>
           <div className="filter-tabs">
@@ -93,7 +68,6 @@ function UserBookings() {
           </div>
         </div>
 
-        {/* Content */}
         {loading ? (
           <div className="loading-screen">Loading your bookings…</div>
         ) : bookings.length === 0 ? (
@@ -108,8 +82,8 @@ function UserBookings() {
             {bookings.map((b) => (
               <div key={b.id} className="booking-card">
                 <div className="card-head">
-                  <span className="card-room">Room #{b.room}</span>
-                  <span className={`status-badge ${b.status}`}>{b.status}</span>
+                  <span className="card-room">Room #{b.room_number || b.room}</span>
+                  <span className={`status-badge ${getStatusClass(b.status)}`}>{b.status}</span>
                 </div>
 
                 <div className="card-details">
@@ -125,15 +99,18 @@ function UserBookings() {
                     <span className="detail-label">Check-out</span>
                     <span className="detail-value">{b.check_out_date}</span>
                   </div>
+                  {b.nights && (
+                    <div className="detail-item">
+                      <span className="detail-label">Nights</span>
+                      <span className="detail-value">{b.nights}</span>
+                    </div>
+                  )}
                 </div>
 
-                {b.status !== "cancelled" && (
+                {b.status !== "cancelled" && b.can_cancel && (
                   <>
                     <div className="card-divider" />
-                    <button
-                      className="cancel-btn"
-                      onClick={() => cancelBooking(b.id)}
-                    >
+                    <button className="cancel-btn" onClick={() => cancelBooking(b.id)}>
                       Cancel Booking
                     </button>
                   </>
@@ -147,4 +124,4 @@ function UserBookings() {
   );
 }
 
-export default UserBookings;
+export default MyBookings;
