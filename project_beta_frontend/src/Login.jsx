@@ -29,7 +29,7 @@ function Login() {
       // store tokens
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      navigate("/user-rooms/view/");
+      navigate("/user-profile/");
     } catch (err) {
       const message =
         err?.response?.data?.detail ||

@@ -73,6 +73,14 @@ const bookRoom = async (roomId) => {
   }
 };
 
+const handleLogout = () => {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  navigate("/login");
+};
+
+const token1 = localStorage.getItem("access");
+
   if (loading)
     return <h3 style={{ textAlign: "center" }}>Loading rooms...</h3>;
 
@@ -81,9 +89,18 @@ const bookRoom = async (roomId) => {
 {/* Header */}
       <div className="home-header">
         <div className="header-top">
-          <button className="login-btn" onClick={() => navigate("/login")}>
-            Login
-          </button>
+          <button className="login-btn" onClick={() => navigate("/user-profile")} style={{ marginRight: "10px" }}>
+              User Profile
+            </button>
+          {token1 ? (
+            <button className="login-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          ) : (
+            <button className="login-btn" onClick={() => navigate("/login")}>
+              Login
+            </button>
+          )}
         </div>
 
         <h1>🏨 Hotel Management System</h1>

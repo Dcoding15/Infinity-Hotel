@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "./AxiosInstance";
 import "./UserRoom.css";
+import { useNavigate } from "react-router-dom";
+import "./Rooms.css";
 
 function UserBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchBookings();
@@ -29,7 +32,7 @@ function UserBookings() {
     } catch (err) {
       console.error("Fetch error:", err);
       if (err.response?.status === 401) {
-        alert("Unauthorized. Please login again.");
+        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -57,10 +60,14 @@ function UserBookings() {
     }
   };
 
+const token1 = localStorage.getItem("access");
+
   return (
     <div className="bookings-container">
       <h2 className="title">Your Bookings</h2>
-
+      <button type="button" onClick={() => navigate("/")} className="browse-btn" >
+          Browse Rooms
+      </button>
       {/* Filter */}
       <div className="filter-box">
         <select

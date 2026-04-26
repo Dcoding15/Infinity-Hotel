@@ -67,7 +67,7 @@ class Booking(models.Model):
             raise ValidationError("Cannot book past dates")
 
     def __str__(self):
-        return f"Booking {self.id} - {self.user.username}"
+        return f"{self.user.username} booking for Room {self.room.room_number}"
 
 
 # ----------------------
@@ -98,7 +98,7 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment - Booking {self.booking.id}"
+        return f"Payment - {self.booking.user.username} for Booking {self.booking.id}"
 
 # ----------------------
 # User Review Model
