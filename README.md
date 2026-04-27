@@ -1,4 +1,3 @@
-```markdown
 # 🏨 Hotel Infinity – Complete Hotel Booking System
 
 A full‑stack hotel booking web application built with **Django REST Framework** (backend) and **React + Vite** (frontend).  
@@ -231,4 +230,3 @@ hotel-infinity/
 Developed as a full‑stack project integrating Django REST API with a React frontend.
 
 © 2025 Hotel Infinity | Infinity Team
-```
