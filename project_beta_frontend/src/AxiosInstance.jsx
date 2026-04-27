@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.1.4:8000/hotel-infinity/", // Update this to your Django server URL
+  baseURL: "http://192.168.1.6:8000/hotel-infinity/", // Update this to your Django server URL
 });
 
 // Attach access token to every request automatically

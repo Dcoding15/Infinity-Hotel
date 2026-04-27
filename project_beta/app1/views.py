@@ -1,5 +1,5 @@
 from datetime import timedelta
-
+from django.utils.dateparse import parse_date
 from django.db import transaction
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
@@ -27,6 +27,11 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
 )
+
+import razorpay
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 # ======================
@@ -130,7 +135,6 @@ class CustomerDetailView(generics.RetrieveUpdateAPIView):
 # ROOM MANAGEMENT
 # ======================
 class RoomListView(generics.ListAPIView):
-    """Public: list active rooms with optional filters."""
     serializer_class = RoomSerializer
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["price", "capacity", "room_number"]
@@ -140,6 +144,7 @@ class RoomListView(generics.ListAPIView):
         queryset = Room.objects.filter(is_active=True)
         params = self.request.query_params
 
+        # Type, price, capacity filters (unchanged)
         if params.get("room_type"):
             queryset = queryset.filter(room_type=params["room_type"])
         if params.get("min_price"):
@@ -149,12 +154,34 @@ class RoomListView(generics.ListAPIView):
         if params.get("capacity"):
             queryset = queryset.filter(capacity__gte=params["capacity"])
 
-        # availability filter: resolve in Python using is_available property
+        # Date availability filter
+        check_in = params.get("check_in")
+        check_out = params.get("check_out")
+        if check_in and check_out:
+            check_in_date = parse_date(check_in)
+            check_out_date = parse_date(check_out)
+            if check_in_date and check_out_date:
+                # Exclude rooms that have any overlapping booking (pending/confirmed)
+                overlapping_bookings = Booking.objects.filter(
+                    status__in=["pending", "confirmed"],
+                    check_in_date__lt=check_out_date,
+                    check_out_date__gt=check_in_date,
+                ).values_list("room_id", flat=True)
+                queryset = queryset.exclude(id__in=overlapping_bookings)
+
+        # Optional availability boolean filter (keep as before, but now works with dates)
         availability = params.get("available")
         if availability is not None:
             want_available = availability.lower() == "true"
-            ids = [r.id for r in queryset if r.is_available == want_available]
-            queryset = queryset.filter(id__in=ids)
+            if want_available:
+                # Already filtered by overlapping bookings if dates given
+                # If no dates given, fallback to is_available (today check)
+                if not (check_in and check_out):
+                    ids = [r.id for r in queryset if r.is_available]
+                    queryset = queryset.filter(id__in=ids)
+            else:
+                # Want booked rooms – only if no dates given (otherwise we already excluded overlapping)
+                pass
 
         return queryset
 
@@ -242,6 +269,7 @@ class MyBookingsView(generics.ListAPIView):
 
 
 class CancelBookingView(APIView):
+    parser_classes = [IsAdminRole]
     """Authenticated user cancels their own booking (24h+ before check-in)."""
     permission_classes = [IsAuthenticated]
 
@@ -344,12 +372,95 @@ class AdminPaymentListView(generics.ListAPIView):
 
 
 class AdminPaymentStatusView(generics.UpdateAPIView):
-    """Admin: update payment status (e.g. mark as paid / refunded)."""
+    """
+    Admin: update payment status (e.g. mark as paid / refunded).
+    If status becomes 'refunded', the associated booking is automatically cancelled.
+    """
     serializer_class = PaymentStatusSerializer
     permission_classes = [IsAdminRole]
     queryset = Payment.objects.all()
     http_method_names = ["patch"]
 
+    def perform_update(self, serializer):
+        payment = self.get_object()
+        old_status = payment.payment_status
+        new_status = serializer.validated_data.get('payment_status')
+        
+        # Save the new payment status
+        serializer.save()
+        
+        # If new status is 'refunded' and it wasn't already refunded, cancel the booking
+        if new_status == 'refunded' and old_status != 'refunded':
+            booking = payment.booking
+            if booking.status != 'cancelled':
+                booking.status = 'cancelled'
+                booking.save(update_fields=['status'])
+
+
+client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+class CreateRazorpayOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        booking_id = request.data.get("booking_id")
+        try:
+            booking = Booking.objects.get(id=booking_id, user=request.user)
+        except Booking.DoesNotExist:
+            return Response({"error": "Booking not found"}, status=404)
+
+        # Check if payment already exists
+        if hasattr(booking, "payment"):
+            return Response({"error": "Payment already initiated"}, status=400)
+
+        amount_paise = int(booking.total_price * 100)  # Razorpay expects paise
+        order_data = {
+            "amount": amount_paise,
+            "currency": "INR",
+            "receipt": f"booking_{booking.id}",
+            "notes": {"booking_id": booking.id, "user_id": request.user.id}
+        }
+        razorpay_order = client.order.create(data=order_data)
+
+        # Create a temporary payment record
+        payment = Payment.objects.create(
+            user=request.user,
+            booking=booking,
+            amount=booking.total_price,
+            payment_status="pending",
+            payment_method="online",  # we'll update later from webhook
+            razorpay_order_id=razorpay_order["id"],
+        )
+        return Response({
+            "order_id": razorpay_order["id"],
+            "amount": booking.total_price,
+            "currency": "INR",
+            "key": settings.RAZORPAY_KEY_ID,
+        })
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RazorpayWebhookView(APIView):
+    permission_classes = []  # disable auth for webhook
+    def post(self, request):
+        # Verify signature (optional but recommended)
+        # For simplicity, we trust the payload – in production verify signature
+        data = request.data
+        event = data.get("event")
+        if event == "payment.captured":
+            payment_id = data["payload"]["payment"]["entity"]["id"]
+            order_id = data["payload"]["payment"]["entity"]["order_id"]
+            try:
+                payment = Payment.objects.get(razorpay_order_id=order_id)
+                payment.payment_status = "paid"
+                payment.razorpay_payment_id = payment_id
+                payment.save()
+                # Optionally confirm the related booking
+                booking = payment.booking
+                booking.status = "confirmed"
+                booking.save(update_fields=["status"])
+            except Payment.DoesNotExist:
+                pass
+        return Response({"status": "ok"})
 
 # ======================
 # REVIEWS

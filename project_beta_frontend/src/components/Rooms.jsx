@@ -19,25 +19,28 @@ function Rooms() {
 
   useEffect(() => {
     fetchRooms();
-  }, [page, filters]);
+  }, [page, filters, checkIn, checkOut]);
 
   const fetchRooms = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page });
-      Object.entries(filters).forEach(([k, v]) => { if (v !== "") params.set(k, v); });
-      const res = await axiosInstance.get(`rooms/?${params}`);
-      setRooms(res.data.results ?? res.data);
-      if (res.data.count) {
-        setTotalCount(res.data.count);
-        setTotalPages(Math.ceil(res.data.count / 10));
-      }
-    } catch (err) {
-      console.error("Failed to fetch rooms:", err);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const params = new URLSearchParams({ page });
+    Object.entries(filters).forEach(([k, v]) => { if (v !== "") params.set(k, v); });
+    // Add check_in and check_out if present
+    if (checkIn) params.set("check_in", checkIn);
+    if (checkOut) params.set("check_out", checkOut);
+    const res = await axiosInstance.get(`rooms/?${params}`);
+    setRooms(res.data.results ?? res.data);
+    if (res.data.count) {
+      setTotalCount(res.data.count);
+      setTotalPages(Math.ceil(res.data.count / 10));
     }
-  };
+  } catch (err) {
+    console.error("Failed to fetch rooms:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleFilterChange = (key, value) => {
     setPage(1);

@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     # Auth
+    RazorpayWebhookView,
     RegisterView,
     LoginView,
     # User profile
@@ -27,6 +28,8 @@ from .views import (
     MyPaymentsView,
     AdminPaymentListView,
     AdminPaymentStatusView,
+    CreateRazorpayOrderView,
+    RazorpayWebhookView,
     # Reviews
     ReviewListView,
     ReviewCreateView,
@@ -83,6 +86,8 @@ urlpatterns = [
     # ──────────────────────────────
     path("payments/", PaymentCreateView.as_view(), name="payment-create"),
     path("payments/my/", MyPaymentsView.as_view(), name="my-payments"),
+    path("create-razorpay-order/", CreateRazorpayOrderView.as_view(), name="create-order"),
+    path("razorpay-webhook/", RazorpayWebhookView.as_view(), name="razorpay-webhook"),
 
     # ──────────────────────────────
     # PAYMENTS — ADMIN

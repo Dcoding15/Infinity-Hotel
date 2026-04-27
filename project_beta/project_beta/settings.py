@@ -72,6 +72,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+RAZORPAY_KEY_ID = "rzp_test_xxxx"   # from razorpay dashboard (test mode)
+RAZORPAY_KEY_SECRET = "xxxxxx"
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [

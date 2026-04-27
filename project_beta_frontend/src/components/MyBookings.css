@@ -191,6 +191,20 @@
   font-style: italic;
 }
 
+.pay-now-btn {
+  padding: 11px;
+  background: var(--amber);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  margin-top: 8px;
+  cursor: pointer;
+}
+.pay-now-btn:hover {
+  background: var(--amber-light);
+}
+
 .empty-state {
   text-align: center;
   padding: 80px 20px;

@@ -140,6 +140,8 @@ class Payment(models.Model):
     )
     payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES)
     transaction_id = models.CharField(max_length=100, blank=True)
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

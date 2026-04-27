@@ -10,6 +10,8 @@ function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user.role === "admin";
 
   useEffect(() => {
     fetchBookings();
@@ -107,13 +109,17 @@ function MyBookings() {
                   )}
                 </div>
 
-                {b.status !== "cancelled" && b.can_cancel && (
-                  <>
-                    <div className="card-divider" />
-                    <button className="cancel-btn" onClick={() => cancelBooking(b.id)}>
-                      Cancel Booking
-                    </button>
-                  </>
+                {/* Cancel Button (if cancellable) */}
+                {isAdmin && b.status !== "cancelled" && (
+                  <button className="cancel-btn" onClick={() => cancelBooking(b.id)}>Cancel Booking</button>
+                )}
+                {b.status === "confirmed" && !b.has_payment && (
+                  <button
+                    className="pay-now-btn"
+                    onClick={() => navigate(`/create-payment/${b.id}`)}
+                  >
+                    Pay Now
+                  </button>
                 )}
               </div>
             ))}

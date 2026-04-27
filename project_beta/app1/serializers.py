@@ -77,6 +77,7 @@ class BookingSerializer(serializers.ModelSerializer):
     total_price = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
     )
+    has_payment = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -84,9 +85,9 @@ class BookingSerializer(serializers.ModelSerializer):
             "id", "user", "room", "room_number",
             "check_in_date", "check_out_date",
             "nights", "total_price", "status",
-            "can_cancel", "created_at",
+            "can_cancel", "created_at", "has_payment",   # add has_payment here
         ]
-        read_only_fields = ["user", "status", "total_price", "created_at"]
+        read_only_fields = ["user", "status", "total_price", "created_at", "has_payment"]
 
     def validate(self, data):
         check_in = data.get("check_in_date")
@@ -102,6 +103,9 @@ class BookingSerializer(serializers.ModelSerializer):
                     {"check_in_date": "Cannot book past dates."}
                 )
         return data
+    
+    def get_has_payment(self, obj):
+        return hasattr(obj, 'payment')
 
 
 class BookingAdminSerializer(BookingSerializer):
